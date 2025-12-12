@@ -2,7 +2,7 @@
 Item Verification Service
 Business logic for item verification operations.
 """
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from app.repositories.implementations.item_verification_repository import (
     ItemVerificationRepository
 )
@@ -78,14 +78,25 @@ class VerificationService:
         )
         
         # Get updated verification count
-        verification_count = self.verification_repo.get_verification_count_for_item(
-            item_id
+        verification_count = (
+            self.verification_repo.get_verification_count_for_item(
+                item_id
+            )
         )
+        
+        # Get user and item names
+        user_name = (
+            f"{verification.user.first_name} "
+            f"{verification.user.last_name}"
+        )
+        item_name = verification.item.name
         
         return {
             "verification_id": verification.verification_id,
             "user_id": verification.user_id,
+            "user_name": user_name,
             "item_id": verification.item_id,
+            "item_name": item_name,
             "note": verification.note,
             "created_at": verification.created_at.isoformat(),
             "verification_count": verification_count
@@ -191,10 +202,18 @@ class VerificationService:
         Returns:
             Dict with verification data
         """
+        user_name = (
+            f"{verification.user.first_name} "
+            f"{verification.user.last_name}"
+        )
+        item_name = verification.item.name
+        
         return {
             "verification_id": verification.verification_id,
             "user_id": verification.user_id,
+            "user_name": user_name,
             "item_id": verification.item_id,
+            "item_name": item_name,
             "note": verification.note,
             "created_at": verification.created_at.isoformat()
         }

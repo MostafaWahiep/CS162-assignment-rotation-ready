@@ -3,6 +3,7 @@ Verification API Endpoints
 Routes for item verification operations.
 """
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from pydantic import ValidationError
 from app.services.verification_service import (
     VerificationService,
@@ -17,7 +18,6 @@ from app.api.v1.schemas.verification_schema import (
     ItemVerificationsResponse,
     UserVerificationsResponse
 )
-from app.middleware.auth_middleware import token_required
 
 
 verification_bp = Blueprint('verifications', __name__)
@@ -25,8 +25,8 @@ verification_service = VerificationService()
 
 
 @verification_bp.route('/items/<int:item_id>/verify', methods=['POST'])
-@token_required
-def verify_item(current_user, item_id: int):
+@jwt_required()
+def verify_item(item_id: int):
     """
     Verify that an item exists.
     
@@ -43,12 +43,15 @@ def verify_item(current_user, item_id: int):
         404: Item not found
     """
     try:
+        # Get authenticated user ID
+        user_id = get_jwt_identity()
+        
         # Parse and validate request body
         request_data = VerifyItemRequest(**request.get_json() or {})
         
         # Create verification
         verification_data = verification_service.verify_item(
-            user_id=current_user.user_id,
+            user_id=user_id,
             item_id=item_id,
             note=request_data.note
         )
