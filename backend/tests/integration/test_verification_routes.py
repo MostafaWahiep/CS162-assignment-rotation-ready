@@ -184,12 +184,17 @@ class TestVerificationRoutes:
     def test_get_verification_success(
         self,
         client,
+        verified_user,
         item_verification,
         app_context
     ):
         """Test getting a verification by ID."""
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
         response = client.get(
-            f'/api/v1/verification/{item_verification.verification_id}'
+            f'/api/v1/verification/{item_verification.verification_id}',
+            headers=headers
         )
         
         assert response.status_code == 200
@@ -203,9 +208,12 @@ class TestVerificationRoutes:
         assert data['note'] == item_verification.note
         assert 'created_at' in data
 
-    def test_get_verification_not_found(self, client, app_context):
+    def test_get_verification_not_found(self, client, verified_user, app_context):
         """Test getting non-existent verification returns 404."""
-        response = client.get('/api/v1/verification/99999')
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
+        response = client.get('/api/v1/verification/99999', headers=headers)
         
         assert response.status_code == 404
         data = json.loads(response.data)
@@ -216,12 +224,16 @@ class TestVerificationRoutes:
     def test_get_item_verifications_success(
         self,
         client,
+        verified_user,
         item,
         multiple_verifications,
         app_context
     ):
         """Test getting all verifications for an item."""
-        response = client.get(f'/api/v1/verification/items/{item.item_id}')
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
+        response = client.get(f'/api/v1/verification/items/{item.item_id}', headers=headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -243,13 +255,18 @@ class TestVerificationRoutes:
     def test_get_item_verifications_with_limit(
         self,
         client,
+        verified_user,
         item,
         multiple_verifications,
         app_context
     ):
         """Test getting item verifications with limit parameter."""
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
         response = client.get(
-            f'/api/v1/verification/items/{item.item_id}?limit=2'
+            f'/api/v1/verification/items/{item.item_id}?limit=2',
+            headers=headers
         )
         
         assert response.status_code == 200
@@ -259,9 +276,12 @@ class TestVerificationRoutes:
         assert data['returned_count'] == 2
         assert len(data['verifications']) == 2
 
-    def test_get_item_verifications_empty(self, client, item, app_context):
+    def test_get_item_verifications_empty(self, client, verified_user, item, app_context):
         """Test getting verifications for item with no verifications."""
-        response = client.get(f'/api/v1/verification/items/{item.item_id}')
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
+        response = client.get(f'/api/v1/verification/items/{item.item_id}', headers=headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -273,12 +293,17 @@ class TestVerificationRoutes:
     def test_get_item_verifications_limit_capped_at_200(
         self,
         client,
+        verified_user,
         item,
         app_context
     ):
         """Test that limit is capped at 200."""
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
         response = client.get(
-            f'/api/v1/verification/items/{item.item_id}?limit=500'
+            f'/api/v1/verification/items/{item.item_id}?limit=500',
+            headers=headers
         )
         
         assert response.status_code == 200
@@ -289,12 +314,16 @@ class TestVerificationRoutes:
     def test_get_user_verifications_success(
         self,
         client,
+        verified_user,
         user,
         multiple_verifications,
         app_context
     ):
         """Test getting all verifications by a user."""
-        response = client.get(f'/api/v1/verification/users/{user.user_id}')
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
+        response = client.get(f'/api/v1/verification/users/{user.user_id}', headers=headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -310,13 +339,18 @@ class TestVerificationRoutes:
     def test_get_user_verifications_with_limit(
         self,
         client,
+        verified_user,
         user,
         multiple_verifications,
         app_context
     ):
         """Test getting user verifications with limit parameter."""
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
         response = client.get(
-            f'/api/v1/verification/users/{user.user_id}?limit=1'
+            f'/api/v1/verification/users/{user.user_id}?limit=1',
+            headers=headers
         )
         
         assert response.status_code == 200
@@ -325,9 +359,12 @@ class TestVerificationRoutes:
         assert data['count'] == 1
         assert len(data['verifications']) == 1
 
-    def test_get_user_verifications_empty(self, client, user, app_context):
+    def test_get_user_verifications_empty(self, client, verified_user, user, app_context):
         """Test getting verifications for user with no verifications."""
-        response = client.get(f'/api/v1/verification/users/{user.user_id}')
+        tokens = TokenService.generate_tokens(verified_user)
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        
+        response = client.get(f'/api/v1/verification/users/{user.user_id}', headers=headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -361,7 +398,8 @@ class TestVerificationRoutes:
         
         # 2. Get the specific verification
         get_response = client.get(
-            f'/api/v1/verification/{verification_id}'
+            f'/api/v1/verification/{verification_id}',
+            headers=headers
         )
         assert get_response.status_code == 200
         get_data = json.loads(get_response.data)
@@ -369,7 +407,8 @@ class TestVerificationRoutes:
         
         # 3. Get all verifications for the item
         item_verifs_response = client.get(
-            f'/api/v1/verification/items/{item.item_id}'
+            f'/api/v1/verification/items/{item.item_id}',
+            headers=headers
         )
         assert item_verifs_response.status_code == 200
         item_verifs_data = json.loads(item_verifs_response.data)
@@ -377,7 +416,8 @@ class TestVerificationRoutes:
         
         # 4. Get all verifications by the user
         user_verifs_response = client.get(
-            f'/api/v1/verification/users/{verified_user.user_id}'
+            f'/api/v1/verification/users/{verified_user.user_id}',
+            headers=headers
         )
         assert user_verifs_response.status_code == 200
         user_verifs_data = json.loads(user_verifs_response.data)
