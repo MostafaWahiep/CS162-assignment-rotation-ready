@@ -11,12 +11,12 @@ from app import db
 class TestVerificationRoutes:
     """Test Verification API endpoints."""
 
-    # POST /api/v1/verification/items/<item_id>/verify tests
+    # POST /api/v1/verification/items/<item_id> tests
 
     def test_verify_item_requires_authentication(self, client, item):
-        """Test that POST /verification/items/<item_id>/verify requires JWT token."""
+        """Test that POST /verification/items/<item_id> requires JWT token."""
         response = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             json={}
         )
         
@@ -28,7 +28,7 @@ class TestVerificationRoutes:
         headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
         
         response = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             headers=headers,
             json={'note': 'Item is still available'}
         )
@@ -59,7 +59,7 @@ class TestVerificationRoutes:
         headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
         
         response = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             headers=headers,
             json={}
         )
@@ -79,7 +79,7 @@ class TestVerificationRoutes:
         headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
         
         response = client.post(
-            '/api/v1/verification/items/99999/verify',
+            '/api/v1/verification/items/99999',
             headers=headers,
             json={'note': 'Test'}
         )
@@ -102,7 +102,7 @@ class TestVerificationRoutes:
         
         # First verification
         response1 = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             headers=headers,
             json={'note': 'First'}
         )
@@ -110,7 +110,7 @@ class TestVerificationRoutes:
         
         # Second verification same day
         response2 = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             headers=headers,
             json={'note': 'Second'}
         )
@@ -134,7 +134,7 @@ class TestVerificationRoutes:
         headers1 = {'Authorization': f'Bearer {tokens1["access_token"]}'}
         
         response1 = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             headers=headers1,
             json={'note': 'User 1'}
         )
@@ -147,7 +147,7 @@ class TestVerificationRoutes:
         headers2 = {'Authorization': f'Bearer {tokens2["access_token"]}'}
         
         response2 = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             headers=headers2,
             json={'note': 'User 2'}
         )
@@ -170,7 +170,7 @@ class TestVerificationRoutes:
         long_note = 'x' * 501
         
         response = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             headers=headers,
             json={'note': long_note}
         )
@@ -351,7 +351,7 @@ class TestVerificationRoutes:
         
         # 1. Verify the item
         verify_response = client.post(
-            f'/api/v1/verification/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}',
             headers=headers,
             json={'note': 'Workflow test'}
         )

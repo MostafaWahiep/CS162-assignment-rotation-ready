@@ -24,7 +24,7 @@ verification_bp = Blueprint('verifications', __name__)
 verification_service = VerificationService()
 
 
-@verification_bp.route('/items/<int:item_id>/verify', methods=['POST'])
+@verification_bp.route('/items/<int:item_id>', methods=['POST'])
 @jwt_required()
 def verify_item(item_id: int):
     """
