@@ -11,6 +11,7 @@ from tests.fixtures.user_fixtures import *  # noqa
 from tests.fixtures.item_fixtures import *  # noqa
 from tests.fixtures.verification_fixtures import *  # noqa
 from tests.fixtures.category_fixtures import *  # noqa
+from tests.fixtures.item_verification_fixtures import *  # noqa
 
 
 @pytest.fixture(scope='session')

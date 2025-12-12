@@ -6,8 +6,9 @@ from typing import Optional, Dict, Any
 from app.repositories.implementations.item_verification_repository import (
     ItemVerificationRepository
 )
-from app.repositories.implementations.item_repository import ItemRepository
 from app.models.item_verification import ItemVerification
+from app.models.item import Item
+from app import db
 
 
 class ItemNotFoundError(Exception):
@@ -30,7 +31,6 @@ class VerificationService:
     
     def __init__(self):
         self.verification_repo = ItemVerificationRepository()
-        self.item_repo = ItemRepository()
     
     def verify_item(
         self,
@@ -59,8 +59,8 @@ class VerificationService:
             ItemNotFoundError: If item doesn't exist
             AlreadyVerifiedTodayError: If user already verified this item today
         """
-        # Check if item exists
-        item = self.item_repo.get_item_by_id(item_id)
+        # Check if item exists (without city restriction)
+        item = db.session.get(Item, item_id)
         if not item:
             raise ItemNotFoundError(f"Item with id {item_id} not found")
         
