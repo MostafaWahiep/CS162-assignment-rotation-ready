@@ -79,7 +79,7 @@ def verify_item(item_id: int):
         }), 500
 
 
-@verification_bp.route('/verifications/<int:verification_id>', methods=['GET'])
+@verification_bp.route('/<int:verification_id>', methods=['GET'])
 def get_verification(verification_id: int):
     """
     Get a single verification by ID.
@@ -106,7 +106,7 @@ def get_verification(verification_id: int):
         }), 500
 
 
-@verification_bp.route('/items/<int:item_id>/verifications', methods=['GET'])
+@verification_bp.route('/items/<int:item_id>', methods=['GET'])
 def get_item_verifications(item_id: int):
     """
     Get all verifications for an item.
@@ -137,7 +137,7 @@ def get_item_verifications(item_id: int):
         }), 500
 
 
-@verification_bp.route('/users/<int:user_id>/verifications', methods=['GET'])
+@verification_bp.route('/users/<int:user_id>', methods=['GET'])
 def get_user_verifications(user_id: int):
     """
     Get all verifications by a user.

@@ -11,12 +11,12 @@ from app import db
 class TestVerificationRoutes:
     """Test Verification API endpoints."""
 
-    # POST /api/v1/items/<item_id>/verify tests
+    # POST /api/v1/verification/items/<item_id>/verify tests
 
     def test_verify_item_requires_authentication(self, client, item):
-        """Test that POST /items/<item_id>/verify requires JWT token."""
+        """Test that POST /verification/items/<item_id>/verify requires JWT token."""
         response = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             json={}
         )
         
@@ -28,7 +28,7 @@ class TestVerificationRoutes:
         headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
         
         response = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             headers=headers,
             json={'note': 'Item is still available'}
         )
@@ -59,7 +59,7 @@ class TestVerificationRoutes:
         headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
         
         response = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             headers=headers,
             json={}
         )
@@ -79,7 +79,7 @@ class TestVerificationRoutes:
         headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
         
         response = client.post(
-            '/api/v1/items/99999/verify',
+            '/api/v1/verification/items/99999/verify',
             headers=headers,
             json={'note': 'Test'}
         )
@@ -102,7 +102,7 @@ class TestVerificationRoutes:
         
         # First verification
         response1 = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             headers=headers,
             json={'note': 'First'}
         )
@@ -110,7 +110,7 @@ class TestVerificationRoutes:
         
         # Second verification same day
         response2 = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             headers=headers,
             json={'note': 'Second'}
         )
@@ -134,7 +134,7 @@ class TestVerificationRoutes:
         headers1 = {'Authorization': f'Bearer {tokens1["access_token"]}'}
         
         response1 = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             headers=headers1,
             json={'note': 'User 1'}
         )
@@ -147,7 +147,7 @@ class TestVerificationRoutes:
         headers2 = {'Authorization': f'Bearer {tokens2["access_token"]}'}
         
         response2 = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             headers=headers2,
             json={'note': 'User 2'}
         )
@@ -170,7 +170,7 @@ class TestVerificationRoutes:
         long_note = 'x' * 501
         
         response = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             headers=headers,
             json={'note': long_note}
         )
@@ -179,7 +179,7 @@ class TestVerificationRoutes:
         data = json.loads(response.data)
         assert 'error' in data
 
-    # GET /api/v1/verifications/<verification_id> tests
+    # GET /api/v1/verification/<verification_id> tests
 
     def test_get_verification_success(
         self,
@@ -189,7 +189,7 @@ class TestVerificationRoutes:
     ):
         """Test getting a verification by ID."""
         response = client.get(
-            f'/api/v1/verifications/{item_verification.verification_id}'
+            f'/api/v1/verification/{item_verification.verification_id}'
         )
         
         assert response.status_code == 200
@@ -205,13 +205,13 @@ class TestVerificationRoutes:
 
     def test_get_verification_not_found(self, client, app_context):
         """Test getting non-existent verification returns 404."""
-        response = client.get('/api/v1/verifications/99999')
+        response = client.get('/api/v1/verification/99999')
         
         assert response.status_code == 404
         data = json.loads(response.data)
         assert 'error' in data
 
-    # GET /api/v1/items/<item_id>/verifications tests
+    # GET /api/v1/verification/items/<item_id> tests
 
     def test_get_item_verifications_success(
         self,
@@ -221,7 +221,7 @@ class TestVerificationRoutes:
         app_context
     ):
         """Test getting all verifications for an item."""
-        response = client.get(f'/api/v1/items/{item.item_id}/verifications')
+        response = client.get(f'/api/v1/verification/items/{item.item_id}')
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -249,7 +249,7 @@ class TestVerificationRoutes:
     ):
         """Test getting item verifications with limit parameter."""
         response = client.get(
-            f'/api/v1/items/{item.item_id}/verifications?limit=2'
+            f'/api/v1/verification/items/{item.item_id}?limit=2'
         )
         
         assert response.status_code == 200
@@ -261,7 +261,7 @@ class TestVerificationRoutes:
 
     def test_get_item_verifications_empty(self, client, item, app_context):
         """Test getting verifications for item with no verifications."""
-        response = client.get(f'/api/v1/items/{item.item_id}/verifications')
+        response = client.get(f'/api/v1/verification/items/{item.item_id}')
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -278,13 +278,13 @@ class TestVerificationRoutes:
     ):
         """Test that limit is capped at 200."""
         response = client.get(
-            f'/api/v1/items/{item.item_id}/verifications?limit=500'
+            f'/api/v1/verification/items/{item.item_id}?limit=500'
         )
         
         assert response.status_code == 200
         # Should not fail even with high limit
 
-    # GET /api/v1/users/<user_id>/verifications tests
+    # GET /api/v1/verification/users/<user_id> tests
 
     def test_get_user_verifications_success(
         self,
@@ -294,7 +294,7 @@ class TestVerificationRoutes:
         app_context
     ):
         """Test getting all verifications by a user."""
-        response = client.get(f'/api/v1/users/{user.user_id}/verifications')
+        response = client.get(f'/api/v1/verification/users/{user.user_id}')
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -316,7 +316,7 @@ class TestVerificationRoutes:
     ):
         """Test getting user verifications with limit parameter."""
         response = client.get(
-            f'/api/v1/users/{user.user_id}/verifications?limit=1'
+            f'/api/v1/verification/users/{user.user_id}?limit=1'
         )
         
         assert response.status_code == 200
@@ -327,7 +327,7 @@ class TestVerificationRoutes:
 
     def test_get_user_verifications_empty(self, client, user, app_context):
         """Test getting verifications for user with no verifications."""
-        response = client.get(f'/api/v1/users/{user.user_id}/verifications')
+        response = client.get(f'/api/v1/verification/users/{user.user_id}')
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -351,7 +351,7 @@ class TestVerificationRoutes:
         
         # 1. Verify the item
         verify_response = client.post(
-            f'/api/v1/items/{item.item_id}/verify',
+            f'/api/v1/verification/items/{item.item_id}/verify',
             headers=headers,
             json={'note': 'Workflow test'}
         )
@@ -361,7 +361,7 @@ class TestVerificationRoutes:
         
         # 2. Get the specific verification
         get_response = client.get(
-            f'/api/v1/verifications/{verification_id}'
+            f'/api/v1/verification/{verification_id}'
         )
         assert get_response.status_code == 200
         get_data = json.loads(get_response.data)
@@ -369,7 +369,7 @@ class TestVerificationRoutes:
         
         # 3. Get all verifications for the item
         item_verifs_response = client.get(
-            f'/api/v1/items/{item.item_id}/verifications'
+            f'/api/v1/verification/items/{item.item_id}'
         )
         assert item_verifs_response.status_code == 200
         item_verifs_data = json.loads(item_verifs_response.data)
@@ -377,7 +377,7 @@ class TestVerificationRoutes:
         
         # 4. Get all verifications by the user
         user_verifs_response = client.get(
-            f'/api/v1/users/{verified_user.user_id}/verifications'
+            f'/api/v1/verification/users/{verified_user.user_id}'
         )
         assert user_verifs_response.status_code == 200
         user_verifs_data = json.loads(user_verifs_response.data)
