@@ -38,3 +38,6 @@ api_bp.register_blueprint(item_bp, url_prefix='/item')
 
 from .value import value_bp
 api_bp.register_blueprint(value_bp, url_prefix='/value')
+
+from .verification import verification_bp
+api_bp.register_blueprint(verification_bp)
