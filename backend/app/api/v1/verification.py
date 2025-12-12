@@ -80,9 +80,12 @@ def verify_item(item_id: int):
 
 
 @verification_bp.route('/<int:verification_id>', methods=['GET'])
+@jwt_required()
 def get_verification(verification_id: int):
     """
     Get a single verification by ID.
+    
+    Required: JWT authentication
     
     Returns:
         200: Verification data
@@ -107,9 +110,12 @@ def get_verification(verification_id: int):
 
 
 @verification_bp.route('/items/<int:item_id>', methods=['GET'])
+@jwt_required()
 def get_item_verifications(item_id: int):
     """
     Get all verifications for an item.
+    
+    Required: JWT authentication
     
     Query Parameters:
         limit: Maximum number of verifications to return (default 50, max 200)
@@ -138,9 +144,12 @@ def get_item_verifications(item_id: int):
 
 
 @verification_bp.route('/users/<int:user_id>', methods=['GET'])
+@jwt_required()
 def get_user_verifications(user_id: int):
     """
     Get all verifications by a user.
+    
+    Required: JWT authentication
     
     Query Parameters:
         limit: Maximum number of verifications to return (default 50, max 200)

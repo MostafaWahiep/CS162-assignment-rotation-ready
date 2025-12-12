@@ -75,3 +75,16 @@ class ItemRepository(ItemRepositoryInterface):
             )
         )
         return result.unique().scalar_one_or_none()
+
+    def exists(self, item_id: int) -> bool:
+        """Check if item exists regardless of rotation city."""
+        return db.session.query(
+            db.session.query(Item).filter_by(item_id=item_id).exists()
+        ).scalar()
+
+    def update_verification_count(self, item_id: int, count: int) -> None:
+        """Update the number of verifications for an item."""
+        item = db.session.get(Item, item_id)
+        if item:
+            item.number_of_verifications = count
+            db.session.commit()
