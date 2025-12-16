@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Button } from '@/shared/components/ui/button';
 import { Spinner } from '@/shared/components/ui/spinner';
 import { MapPin, Clock, User, CheckCircle, Tag, ArrowLeft, Share2, Bookmark, Navigation } from 'lucide-react';
-import { MapPin, Clock, User, CheckCircle, Tag, ArrowLeft, Share2 } from 'lucide-react';
 import { colorSchemes, defaultScheme } from '@/lib/themes.js';
 
 export default function ItemDetailPage() {
