@@ -21,6 +21,7 @@ class UserNested(BaseModel):
     first_name: str
     last_name: str
     email: str
+    profile_picture: Optional[str] = None
     
     model_config = ConfigDict(from_attributes=True)
 

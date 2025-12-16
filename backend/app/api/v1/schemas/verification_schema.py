@@ -30,6 +30,7 @@ class VerificationResponse(BaseModel):
     verification_id: int = Field(..., description="Unique verification ID")
     user_id: int = Field(..., description="ID of user who verified")
     user_name: str = Field(..., description="Full name of user who verified")
+    user_photo: Optional[str] = Field(None, description="Profile photo URL of user who verified")
     item_id: int = Field(..., description="ID of item verified")
     item_name: str = Field(..., description="Name of item verified")
     note: Optional[str] = Field(None, description="Verification note")

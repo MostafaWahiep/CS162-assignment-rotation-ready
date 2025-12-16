@@ -175,8 +175,21 @@ export default function ItemDetailPage() {
               <button
                 type="button"
                 onClick={handleGoToUserProfile}
-                className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full mb-4 hover:bg-white/30 transition"
+                className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full mb-4 hover:bg-white/30 transition"
               >
+                <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center overflow-hidden">
+                  {profilePic ? (
+                    <img
+                      src={profilePic}
+                      alt={item.added_by_user?.first_name || 'User'}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-white font-semibold text-xs">
+                      {firstInitial}{lastInitial}
+                    </span>
+                  )}
+                </div>
                 <span className="text-white text-sm font-medium">
                   Recommended by {item.added_by_user?.first_name || 'a fellow student'}
                 </span>
@@ -405,8 +418,16 @@ export default function ItemDetailPage() {
                 ) : (
                   verifications.map((v) => (
                     <div key={v.verification_id} className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-gray-900 text-sm">
-                        {getInitialsFromName(v.user_name)}
+                      <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-gray-900 text-sm overflow-hidden">
+                        {v.user_photo ? (
+                          <img
+                            src={v.user_photo}
+                            alt={v.user_name || "Anonymous"}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <span>{getInitialsFromName(v.user_name)}</span>
+                        )}
                       </div>
                       <div className="text-sm text-gray-900 font-medium">
                         {v.user_name || "Anonymous"}

@@ -202,6 +202,7 @@ class VerificationService:
         Returns:
             Dict with verification data
         """
+        user_photo = verification.user.profile_picture if verification.user.profile_picture else None
         user_name = (
             f"{verification.user.first_name} "
             f"{verification.user.last_name}"
@@ -215,5 +216,7 @@ class VerificationService:
             "item_id": verification.item_id,
             "item_name": item_name,
             "note": verification.note,
-            "created_at": verification.created_at.isoformat()
+            "created_at": verification.created_at.isoformat(),
+            "user_photo": user_photo
+
         }
