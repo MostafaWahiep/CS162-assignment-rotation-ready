@@ -10,9 +10,22 @@ export default function CategoryTag({ categories, selectedCategoryIds, onToggleC
         germany: ["#005493", "#00264D"],
     };
 
+    // Helper to determine if text should be dark or light based on background
+    const getContrastColor = (hexColor) => {
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        // Calculate luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? '#1f2937' : '#ffffff';
+    };
+
     const palette = localeCategoryPalettes[currentLocale] || localeCategoryPalettes['usa'];
     const cardColor = palette[0];
     const cardColorSelected = palette[1] || palette[0];
+    const textColor = getContrastColor(cardColor);
+    const textColorSelected = getContrastColor(cardColorSelected);
 
     return (
         <div className="mb-8">
@@ -20,6 +33,7 @@ export default function CategoryTag({ categories, selectedCategoryIds, onToggleC
                 <div className="flex flex-wrap gap-2 pb-2">
                     {categories.map((cat) => {
                         const isSelected = selectedCategoryIds.includes(cat.id);
+                        const currentTextColor = isSelected ? textColorSelected : textColor;
                         return (
                             <button
                                 key={cat.id}
@@ -70,7 +84,10 @@ export default function CategoryTag({ categories, selectedCategoryIds, onToggleC
                                 )}
 
                                 {/* Category name */}
-                                <span className="text-sm font-semibold text-white whitespace-nowrap">
+                                <span 
+                                    className="text-sm font-semibold whitespace-nowrap"
+                                    style={{ color: currentTextColor }}
+                                >
                                     {cat.name}
                                 </span>
 

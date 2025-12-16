@@ -20,13 +20,36 @@ export default function SignupPage() {
   const signup = useSignup()
   const verification = useVerification(signup.formData.email)
 
+  const localeMap = {
+    'san francisco': 'usa',
+    'taipei': 'china',
+    'seoul': 'korea',
+    'buenos aires': 'argentina',
+    'hyderabad': 'india',
+    'berlin': 'germany'
+  }
+
+  const handleCityChange = (value) => {
+    signup.handleChange("cityId", value)
+    const selectedCity = rotationCities.find(c => String(c.city_id) === value)
+    if (selectedCity) {
+      const cityName = selectedCity.name?.toLowerCase() || ''
+      const newLocale = localeMap[cityName] || 'usa'
+      setCurrentLocale(newLocale)
+    }
+  }
+
   useEffect(() => {
     const loadCities = async () => {
       try {
         const cities = await getCities()
         setRotationCities(cities)
-        // If no city selected yet, default to first from backend
-        if (!signup.formData.cityId && cities.length > 0) {
+        // Default to San Francisco
+        const sfCity = cities.find(c => c.name?.toLowerCase() === 'san francisco')
+        if (sfCity) {
+          signup.handleChange("cityId", String(sfCity.city_id))
+          setCurrentLocale('usa')
+        } else if (cities.length > 0) {
           signup.handleChange("cityId", String(cities[0].city_id))
         }
       } catch (error) {
@@ -40,19 +63,6 @@ export default function SignupPage() {
     loadCities()
   }, [])
 
-  useEffect(() => {
-    const locales = ['usa', 'china', 'korea', 'argentina', 'india', 'germany']
-    let index = 0
-
-    const cycleLocales = () => {
-      index = (index + 1) % locales.length
-      setCurrentLocale(locales[index])
-      setTimeout(cycleLocales, 8000)
-    }
-
-    const timer = setTimeout(cycleLocales, 8000)
-    return () => clearTimeout(timer)
-  }, [])
 
   const handleRegister = async (e) => {
     e.preventDefault()
@@ -103,11 +113,11 @@ export default function SignupPage() {
   const getLocaleColor = () => {
     const colorMap = {
       usa: '#cc0000',
-      china: '#1d9a5c',
-      korea: '#c60c30',
+      china: '#2c6e49',
+      korea: '#da627d',
       argentina: '#d9a300',
-      india: '#ff9933',
-      germany: '#4a90e2'
+      india: '#ff9505',
+      germany: '#007ea7'
     }
     return colorMap[currentLocale] || '#cc0000'
   }
@@ -205,7 +215,7 @@ export default function SignupPage() {
                 <Field>
                   <FieldContent>
                     <FieldLabel htmlFor="city" className="text-lg font-semibold text-white">Rotation City</FieldLabel>
-                    <Select value={signup.formData.cityId} onValueChange={(value) => signup.handleChange("cityId", value)}>
+                    <Select value={signup.formData.cityId} onValueChange={handleCityChange}>
                       <SelectTrigger className="bg-white rounded-full px-8 py-4 text-gray-800 text-lg shadow-lg">
                         <SelectValue placeholder={citiesLoading ? "Loading cities..." : (citiesError ? citiesError : "Select a city")} />
                       </SelectTrigger>
@@ -229,8 +239,18 @@ export default function SignupPage() {
                 </Field>
               </div>
 
-              <div className="mt-8 w-full max-w-2xl flex items-center justify-center">
-                <Button type="submit" className="rounded-full px-6 py-3 bg-white font-semibold shadow-lg" style={{color: getLocaleColor()}} disabled={signup.isLoading || citiesLoading || rotationCities.length === 0}>
+              <div className="mt-8 w-full max-w-2xl flex items-center justify-between gap-6">
+                <p className="text-white text-sm">
+                  Already have an account? <Link to="/login" className="font-semibold underline hover:opacity-80 transition">Sign in</Link>
+                </p>
+                <Button 
+                  type="submit" 
+                  className="rounded-full px-8 py-3 bg-white font-semibold shadow-lg whitespace-nowrap transition-all" 
+                  style={{color: getLocaleColor()}} 
+                  onMouseEnter={(e) => { if (!signup.isLoading && !citiesLoading && rotationCities.length > 0) { e.currentTarget.style.backgroundColor = getLocaleColor(); e.currentTarget.style.color = 'white'; } }}
+                  onMouseLeave={(e) => { if (!signup.isLoading && !citiesLoading && rotationCities.length > 0) { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = getLocaleColor(); } }}
+                  disabled={signup.isLoading || citiesLoading || rotationCities.length === 0}
+                >
                   {signup.isLoading ? <Spinner className="mr-2" /> : 'Sign up'}
                 </Button>
               </div>
@@ -272,23 +292,45 @@ export default function SignupPage() {
               </div>
 
               <div className="mt-8 w-full max-w-2xl flex flex-col space-y-3">
-                <Button type="submit" className="rounded-full px-6 py-3 bg-white font-semibold shadow-lg" style={{color: getLocaleColor()}} disabled={verification.isLoading || verification.verificationCode.length !== 6}>
+                <Button 
+                  type="submit" 
+                  className="rounded-full px-6 py-3 bg-white font-semibold shadow-lg transition-all" 
+                  style={{color: getLocaleColor()}} 
+                  onMouseEnter={(e) => { if (!verification.isLoading && verification.verificationCode.length === 6) { e.currentTarget.style.backgroundColor = getLocaleColor(); e.currentTarget.style.color = 'white'; } }}
+                  onMouseLeave={(e) => { if (!verification.isLoading && verification.verificationCode.length === 6) { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = getLocaleColor(); } }}
+                  disabled={verification.isLoading || verification.verificationCode.length !== 6}
+                >
                   {verification.isLoading ? <Spinner className="mr-2" /> : 'Verify'}
                 </Button>
                 <div className="flex gap-3">
-                  <Button type="button" variant="ghost" className="flex-1 rounded-full bg-white/90 text-sm font-semibold" style={{color: getLocaleColor()}} onClick={handleResendWithCooldown} disabled={verification.isResending || verification.isLoading || resendCooldown > 0}>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="flex-1 rounded-full bg-white text-sm font-semibold transition-all" 
+                    style={{color: getLocaleColor()}} 
+                    onMouseEnter={(e) => { if (!verification.isResending && !verification.isLoading && resendCooldown === 0) { e.currentTarget.style.backgroundColor = getLocaleColor(); e.currentTarget.style.color = 'white'; } }}
+                    onMouseLeave={(e) => { if (!verification.isResending && !verification.isLoading && resendCooldown === 0) { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = getLocaleColor(); } }}
+                    onClick={handleResendWithCooldown} 
+                    disabled={verification.isResending || verification.isLoading || resendCooldown > 0}
+                  >
                     {verification.isResending ? <Spinner className="mr-2" /> : (resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend code')}
                   </Button>
-                  <Button type="button" variant="outline" className="flex-1 rounded-full bg-white text-sm font-semibold" style={{color: getLocaleColor()}} onClick={handleBackToRegistration} disabled={verification.isLoading}>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 rounded-full bg-white text-sm font-semibold transition-all" 
+                    style={{color: getLocaleColor()}} 
+                    onMouseEnter={(e) => { if (!verification.isLoading) { e.currentTarget.style.backgroundColor = getLocaleColor(); e.currentTarget.style.color = 'white'; } }}
+                    onMouseLeave={(e) => { if (!verification.isLoading) { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = getLocaleColor(); } }}
+                    onClick={handleBackToRegistration} 
+                    disabled={verification.isLoading}
+                  >
                     Back
                   </Button>
                 </div>
               </div>
             </form>
           )}
-          <div className="mt-6 text-white text-center">
-            <p>Already have an account? <Link to="/login" className="font-semibold underline hover:opacity-80 transition">Sign in</Link></p>
-          </div>
         </div>
       </div>
   )

@@ -17,10 +17,12 @@ import { Spinner } from "@/shared/components/ui/spinner"
 
 import { getCurrentUser, updateUserProfile } from "@/api/user"
 import { getCities } from "@/api/cities"
+import "@/shared/styles/locale-theme.css"
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [currentLocale, setCurrentLocale] = useState('usa')
 
   const [cities, setCities] = useState([])
   const [citiesError, setCitiesError] = useState(null)
@@ -38,6 +40,49 @@ export default function ProfilePage() {
   // - profilePreview: what we show in the UI immediately
   const [profilePicture, setProfilePicture] = useState(null)
   const [profilePreview, setProfilePreview] = useState(null)
+
+  const localeMap = {
+    'san francisco': 'usa',
+    'taipei': 'china',
+    'seoul': 'korea',
+    'buenos aires': 'argentina',
+    'hyderabad': 'india',
+    'berlin': 'germany'
+  }
+
+  // Update locale when rotation city changes
+  const updateLocaleFromCity = (cityId) => {
+    const selectedCity = cities.find(c => String(c.city_id) === String(cityId))
+    if (selectedCity) {
+      const cityName = selectedCity.name?.toLowerCase() || ''
+      const newLocale = localeMap[cityName] || 'usa'
+      setCurrentLocale(newLocale)
+    }
+  }
+
+  const getLocaleClass = () => {
+    const classMap = {
+      usa: 'show-photo',
+      china: 'transition-green',
+      korea: 'transition-korea',
+      argentina: 'transition-argentina',
+      india: 'transition-india',
+      germany: 'transition-germany'
+    }
+    return classMap[currentLocale] || 'show-photo'
+  }
+
+  const getLocaleColor = () => {
+    const colorMap = {
+      usa: '#cc0000',
+      china: '#2c6e49',
+      korea: '#da627d',
+      argentina: '#2a9d8f',
+      india: '#ff9505',
+      germany: '#007ea7'
+    }
+    return colorMap[currentLocale] || '#cc0000'
+  }
 
   // Helper: compress/resize image to keep payload reasonable
   // Returns a DataURL (base64) string.
@@ -148,6 +193,11 @@ export default function ProfilePage() {
           setProfilePreview(userData.profile_picture)
           // profilePicture stays null unless the user selects a new one
         }
+
+        // Set locale from user's rotation city
+        if (userData?.rotation_city?.city_id) {
+          updateLocaleFromCity(String(userData.rotation_city.city_id))
+        }
       } catch (err) {
         console.error(err)
         if (err.message?.includes("cities") || err.message?.includes("rotation_city")) {
@@ -220,20 +270,19 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-900 p-4 sm:p-6 md:p-12">
-      <Card className="w-full max-w-md sm:max-w-lg lg:max-w-xl bg-slate-800/90 backdrop-blur-sm border-slate-700 shadow-xl">
-        <CardHeader className="space-y-3 text-center">
-          <CardTitle className="text-3xl font-bold text-white">
-            My Profile
-          </CardTitle>
-          <CardDescription className="text-slate-300 text-sm sm:text-base">
-            Update your personal information and rotation city.
-          </CardDescription>
-        </CardHeader>
+    <div className={`locale-container min-h-screen w-full relative flex items-center justify-center ${getLocaleClass()} p-4`}>
+      <div className={`locale-overlay absolute inset-0 ${getLocaleClass()}`}></div>
+      
+      <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-2xl py-6">
+        <h1 className="text-white text-5xl font-extrabold leading-tight drop-shadow-md text-center mb-4" style={{fontFamily: 'Fraunces, serif'}}>
+          My Profile
+        </h1>
+        
+        {message && <p className="text-white text-center mb-4 font-semibold text-base">{message}</p>}
 
         {/* Profile Picture (UI + preview) */}
-        <div className="flex flex-col items-center gap-3 px-6 pb-2">
-          <div className="w-28 h-28 rounded-full bg-slate-700 overflow-hidden flex items-center justify-center border border-slate-600">
+        <div className="flex flex-col items-center gap-2 mb-5">
+          <div className="w-28 h-28 rounded-full bg-white/20 overflow-hidden flex items-center justify-center border-2 border-white">
             {profilePreview ? (
               <img
                 src={profilePreview}
@@ -241,11 +290,11 @@ export default function ProfilePage() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-slate-300 text-sm">No Photo</span>
+              <span className="text-white text-sm">No Photo</span>
             )}
           </div>
 
-          <label className="cursor-pointer text-sm text-blue-400 hover:underline">
+          <label className="cursor-pointer text-white text-sm font-semibold hover:opacity-80 transition">
             Upload profile picture
             <input
               type="file"
@@ -254,107 +303,105 @@ export default function ProfilePage() {
               onChange={handleProfilePictureChange}
             />
           </label>
-
-          <p className="text-xs text-slate-400 text-center">
-            Tip: Images are automatically resized/compressed before saving.
-          </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-6 sm:space-y-7">
-            {/* Email (cannot change) */}
-            <Field>
-              <FieldContent>
-                <FieldLabel className="text-slate-200">Email</FieldLabel>
-                <Input
-                  type="email"
-                  value={user?.email || ""}
-                  disabled
-                  className="w-full h-12 bg-slate-700/40 border-slate-600 text-slate-400 cursor-not-allowed"
-                />
-              </FieldContent>
-            </Field>
+        <form onSubmit={handleSubmit} className="w-full space-y-5">
+          {/* Email (cannot change) */}
+          <Field>
+            <FieldContent>
+              <FieldLabel className="text-base font-semibold text-white">Email</FieldLabel>
+              <Input
+                type="email"
+                value={user?.email || ""}
+                disabled
+                className="w-full bg-white/10 rounded-full px-6 py-3 text-base text-white/60 cursor-not-allowed backdrop-blur-sm"
+              />
+            </FieldContent>
+          </Field>
 
-            {/* First Name */}
-            <Field>
-              <FieldContent>
-                <FieldLabel className="text-slate-200">First Name</FieldLabel>
-                <Input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full h-12 bg-slate-700/50 border-slate-600 text-white"
-                />
-              </FieldContent>
-            </Field>
+          {/* First Name */}
+          <Field>
+            <FieldContent>
+              <FieldLabel className="text-base font-semibold text-white">First Name</FieldLabel>
+              <Input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full bg-white rounded-full px-6 py-3 text-base text-gray-800 placeholder-gray-400 shadow-lg"
+              />
+            </FieldContent>
+          </Field>
 
-            {/* Last Name */}
-            <Field>
-              <FieldContent>
-                <FieldLabel className="text-slate-200">Last Name</FieldLabel>
-                <Input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full h-12 bg-slate-700/50 border-slate-600 text-white"
-                />
-              </FieldContent>
-            </Field>
+          {/* Last Name */}
+          <Field>
+            <FieldContent>
+              <FieldLabel className="text-base font-semibold text-white">Last Name</FieldLabel>
+              <Input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full bg-white rounded-full px-6 py-3 text-base text-gray-800 placeholder-gray-400 shadow-lg"
+              />
+            </FieldContent>
+          </Field>
 
-            {/* Rotation City */}
-            <Field>
-              <FieldContent>
-                <FieldLabel className="text-slate-200">Rotation City</FieldLabel>
-                {citiesError ? (
-                  <div className="space-y-2">
-                    <p className="text-red-400 text-sm">{citiesError}</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleRetryFetchCities}
-                      className="w-full bg-slate-700/50 hover:bg-slate-700 text-white border-slate-600"
-                    >
-                      Retry Loading Cities
-                    </Button>
-                  </div>
-                ) : (
-                  <Select
-                    value={rotationCityId}
-                    onValueChange={(v) => setRotationCityId(v)}
+          {/* Rotation City */}
+          <Field>
+            <FieldContent>
+              <FieldLabel className="text-base font-semibold text-white">Rotation City</FieldLabel>
+              {citiesError ? (
+                <div className="space-y-2">
+                  <p className="text-white text-base">{citiesError}</p>
+                  <Button
+                    type="button"
+                    onClick={handleRetryFetchCities}
+                    className="w-full bg-white border-white rounded-full transition-all"
+                    style={{ color: getLocaleColor() }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = getLocaleColor(); e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = getLocaleColor(); }}
                   >
-                    <SelectTrigger className="w-full h-12 bg-slate-700/50 border-slate-600 text-white">
-                      <SelectValue placeholder="Choose a city" />
-                    </SelectTrigger>
+                    Retry Loading Cities
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  value={rotationCityId}
+                  onValueChange={(v) => {
+                    setRotationCityId(v)
+                    updateLocaleFromCity(v)
+                  }}
+                >
+                  <SelectTrigger className="w-full bg-white rounded-full px-6 py-3 text-base text-gray-800 shadow-lg">
+                    <SelectValue placeholder="Choose a city" />
+                  </SelectTrigger>
 
-                    <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                      {cities.map((c) => (
-                        <SelectItem key={c.city_id} value={String(c.city_id)}>
-                          {c.name || "Unknown City"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </FieldContent>
-            </Field>
+                  <SelectContent className="bg-white border-white text-gray-800">
+                    {cities.map((c) => (
+                      <SelectItem key={c.city_id} value={String(c.city_id)}>
+                        {c.name || "Unknown City"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </FieldContent>
+          </Field>
 
-            {errorMessage && <FieldError errors={[{ message: errorMessage }]} />}
+          {errorMessage && <p className="text-white text-base">{errorMessage}</p>}
 
-            {message && <p className="text-green-400 mt-2 text-sm">{message}</p>}
-          </CardContent>
-
-          <CardFooter className="pt-4">
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-white font-semibold"
-              disabled={saving}
-            >
-              {saving && <Spinner className="mr-2" />}
-              Save Changes
-            </Button>
-          </CardFooter>
+          <Button
+            type="submit"
+            className="w-full rounded-full px-6 py-3 text-base bg-white font-semibold shadow-lg transition-all"
+            style={{ color: getLocaleColor() }}
+            onMouseEnter={(e) => { if (!saving) { e.currentTarget.style.backgroundColor = getLocaleColor(); e.currentTarget.style.color = 'white'; } }}
+            onMouseLeave={(e) => { if (!saving) { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = getLocaleColor(); } }}
+            disabled={saving}
+          >
+            {saving && <Spinner className="mr-2" />}
+            Save Changes
+          </Button>
         </form>
-      </Card>
+      </div>
     </div>
   )
 }

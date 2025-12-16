@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
-export default function SearchBar({ places, locale, onSearchChange, tags, selectedTagIds, onTagsChange }) {
+// Enhanced search bar with filter controls (distance, condition, hours, price)
+export default function SearchBar({ places, locale, onSearchChange, tags, selectedTagIds, onTagsChange, onFilterChange }) {
     const [search, setSearch] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [showFilterMenu, setShowFilterMenu] = useState(false);
+    // Structured filters mirroring the Buenos Aires UI
+    const [distanceMeters, setDistanceMeters] = useState(1000);
+    const [conditions, setConditions] = useState([]); // 'Excellent' | 'Good' | 'Fair'
+    const [hours, setHours] = useState([]); // 'Morning' | 'Afternoon' | 'Evening'
+    const [prices, setPrices] = useState([]); // 'Budget' | 'Mid-Range' | 'Premium'
     
     const searchRef = useRef(null);
     const filterRef = useRef(null);
@@ -83,6 +89,25 @@ export default function SearchBar({ places, locale, onSearchChange, tags, select
         onTagsChange([]);
     };
 
+    // Notify parent whenever filter changes
+    useEffect(() => {
+        if (onFilterChange) {
+            onFilterChange({
+                distanceMeters,
+                conditions,
+                hours,
+                prices,
+            });
+        }
+    }, [distanceMeters, conditions, hours, prices, onFilterChange]);
+
+    const toggleChip = (setter, values, value) => {
+        setter(values.includes(value)
+            ? values.filter(v => v !== value)
+            : [...values, value]
+        );
+    };
+
     // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -143,28 +168,115 @@ export default function SearchBar({ places, locale, onSearchChange, tags, select
                 Filters ▾
             </button>
             {showFilterMenu && (
-                <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.15)] p-4 min-w-[260px] z-20">
-                    <div className="font-bold mb-2 text-gray-800">Tags</div>
-                    <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto">
-                        {tags.map(tag => {
-                            const isOn = selectedTagIds.includes(tag.id);
-                            return (
-                                <button
-                                    key={tag.id}
-                                    onClick={() => toggleTag(tag.id)}
-                                    className={`border rounded-full px-3 py-1.5 text-sm cursor-pointer transition-all duration-200 ${
-                                        isOn ? 'border-transparent text-white' : 'border-gray-300 bg-[#f7f7f8] text-[#444]'
-                                    }`}
-                                    style={isOn ? { backgroundColor: locale.color } : {}}
-                                >
-                                    {tag.name}
-                                </button>
-                            );
-                        })}
+                <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.15)] p-4 min-w-[320px] z-20">
+                    {/* Distance */}
+                    <div className="mb-4">
+                        <div className="font-bold mb-2 text-gray-800">Distance (m)</div>
+                        <div className="px-1">
+                            <input
+                                type="range"
+                                min={0}
+                                max={1000}
+                                value={distanceMeters}
+                                onChange={(e) => setDistanceMeters(Number(e.target.value))}
+                                className="w-full"
+                            />
+                            <div className="flex justify-between text-xs text-gray-600 mt-1">
+                                <span>0</span>
+                                <span>{Math.round(distanceMeters)}</span>
+                                <span>1000 m</span>
+                            </div>
+                        </div>
                     </div>
+
+                    {/* Condition */}
+                    <div className="mb-4">
+                        <div className="font-bold mb-2 text-gray-800">Condition</div>
+                        <div className="flex flex-wrap gap-2">
+                            {['Excellent','Good','Fair'].map(opt => (
+                                <button
+                                    key={opt}
+                                    onClick={() => toggleChip(setConditions, conditions, opt)}
+                                    className={`rounded-full px-3 py-1.5 text-sm border cursor-pointer ${
+                                        conditions.includes(opt)
+                                            ? 'text-white border-transparent'
+                                            : 'text-gray-700 border-gray-300 bg-[#f7f7f8]'
+                                    }`}
+                                    style={conditions.includes(opt) ? { backgroundColor: locale.color } : {}}
+                                >{opt}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Operating Hours */}
+                    <div className="mb-4">
+                        <div className="font-bold mb-2 text-gray-800">Operating Hours</div>
+                        <div className="flex flex-wrap gap-2">
+                            {['Morning','Afternoon','Evening'].map(opt => (
+                                <button
+                                    key={opt}
+                                    onClick={() => toggleChip(setHours, hours, opt)}
+                                    className={`rounded-full px-3 py-1.5 text-sm border cursor-pointer ${
+                                        hours.includes(opt)
+                                            ? 'text-white border-transparent'
+                                            : 'text-gray-700 border-gray-300 bg-[#f7f7f8]'
+                                    }`}
+                                    style={hours.includes(opt) ? { backgroundColor: locale.color } : {}}
+                                >{opt}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Price Range */}
+                    <div className="mb-4">
+                        <div className="font-bold mb-2 text-gray-800">Price Range</div>
+                        <div className="flex flex-wrap gap-2">
+                            {['Budget','Mid-Range','Premium'].map(opt => (
+                                <button
+                                    key={opt}
+                                    onClick={() => toggleChip(setPrices, prices, opt)}
+                                    className={`rounded-full px-3 py-1.5 text-sm border cursor-pointer ${
+                                        prices.includes(opt)
+                                            ? 'text-white border-transparent'
+                                            : 'text-gray-700 border-gray-300 bg-[#f7f7f8]'
+                                    }`}
+                                    style={prices.includes(opt) ? { backgroundColor: locale.color } : {}}
+                                >{opt}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Tags from backend - selectable */}
+                    <div className="mb-2">
+                        <div className="font-bold mb-2 text-gray-800">Tags</div>
+                        <div className="flex flex-wrap gap-2 max-h-[160px] overflow-y-auto">
+                            {tags.map(tag => {
+                                const isOn = selectedTagIds.includes(tag.id);
+                                return (
+                                    <button
+                                        key={tag.id}
+                                        onClick={() => toggleTag(tag.id)}
+                                        className={`border rounded-full px-3 py-1.5 text-sm cursor-pointer transition-all duration-200 ${
+                                            isOn ? 'border-transparent text-white' : 'border-gray-300 bg-[#f7f7f8] text-[#444]'
+                                        }`}
+                                        style={isOn ? { backgroundColor: locale.color } : {}}
+                                    >
+                                        {tag.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
                     <div className="flex justify-between mt-3">
                         <button 
-                            onClick={clearTags}
+                            onClick={() => {
+                                setDistanceMeters(1000);
+                                setConditions([]);
+                                setHours([]);
+                                setPrices([]);
+                                clearTags();
+                            }}
                             className="bg-gray-100 border border-gray-300 text-gray-700 rounded-lg px-3.5 py-2 cursor-pointer hover:bg-gray-200">
                             Clear
                         </button>
